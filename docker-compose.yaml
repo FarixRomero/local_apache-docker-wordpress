@@ -1,0 +1,36 @@
+version: "3.3"
+services:
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    volumes:
+      - type: bind
+        source: ./wp-content
+        target: /var/www/html/wp-content
+        consistency: cached
+      - ./custom-upload.ini:/usr/local/etc/php/conf.d/custom-upload.ini
+    environment:
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_TABLE_PREFIX=wp_
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=password
+      - WORDPRESS_CONFIG_EXTRA=define('WP_HOME', 'https://seminariolocking.org.pe'); define('WP_SITEURL', 'https://seminariolocking.org.pe');
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - "8080:80"
+
+  db:
+    image: mysql:latest
+    container_name: db
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=wordpress
+    restart: always
+volumes:
+  db_data:
